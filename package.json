@@ -1,0 +1,9 @@
+{
+  "name": "lostlink",
+  "version": "1.0.0",
+  "description": "LostLink - Root package for Render deployment",
+  "scripts": {
+    "install": "cd server && npm install",
+    "start": "cd server && node server.js"
+  }
+}
