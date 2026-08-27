@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables (secrets)
+.env
+*.env
+client/.env
+server/.env
+
+# Production builds
+client/dist/
+client/build/
+server/dist/
+server/build/
+
+# Logs and databases
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.log
+*.sqlite
+
+# Editor / IDE configuration
+.vscode/
+.idea/
+*.suo
+*.ntuser
+*.user
+*.userosscache
+*.sln
+*.suo
+*.user
+
+# OS Metadata
+.DS_Store
+Thumbs.db
