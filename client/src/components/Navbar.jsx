@@ -199,15 +199,19 @@ const Navbar = () => {
           z-index: 1000;
           display: flex;
           align-items: center;
-          border-bottom: 1px solid transparent;
+          background: rgba(255, 255, 255, 0.96);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 2px solid rgba(99, 102, 241, 0.15);
+          box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
           transition: all var(--transition-normal);
-          background: transparent;
         }
         
         .navbar-container.scrolled {
           height: 64px;
-          border-bottom: 1px solid var(--border-color);
-          box-shadow: var(--shadow-sm);
+          background: rgba(255, 255, 255, 0.98);
+          border-bottom: 2px solid var(--primary);
+          box-shadow: 0 10px 30px rgba(99, 102, 241, 0.12);
         }
         
         .navbar-content {

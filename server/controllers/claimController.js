@@ -290,3 +290,79 @@ export const updateClaimStatus = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// @desc    Get messages for a verified claim
+// @route   GET /api/claims/:id/messages
+// @access  Private
+export const getClaimMessages = async (req, res) => {
+  try {
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) {
+      return res.status(404).json({ message: 'Claim not found' });
+    }
+
+    if (
+      claim.claimantId.toString() !== req.user._id.toString() &&
+      claim.ownerId.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    res.json(claim.messages || []);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Send a chat message for a verified claim
+// @route   POST /api/claims/:id/messages
+// @access  Private
+export const sendClaimMessage = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: 'Message text is required' });
+    }
+
+    const claim = await Claim.findById(req.params.id);
+    if (!claim) {
+      return res.status(404).json({ message: 'Claim not found' });
+    }
+
+    if (
+      claim.claimantId.toString() !== req.user._id.toString() &&
+      claim.ownerId.toString() !== req.user._id.toString() &&
+      req.user.role !== 'admin'
+    ) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const newMessage = {
+      senderId: req.user._id,
+      senderName: req.user.name,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+
+    claim.messages.push(newMessage);
+    await claim.save();
+
+    // Determine recipient
+    const recipientId = claim.claimantId.toString() === req.user._id.toString()
+      ? claim.ownerId
+      : claim.claimantId;
+
+    await Notification.create({
+      userId: recipientId,
+      title: `New Message from ${req.user.name} 💬`,
+      message: text.length > 50 ? `${text.substring(0, 50)}...` : text,
+      type: 'chat',
+      claimId: claim._id
+    });
+
+    res.status(201).json(claim.messages);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

@@ -33,43 +33,32 @@ const LandingPage = () => {
           </div>
 
           <div className="hero-visual-block">
-            <div className="visual-wrapper">
-              <div className="flow-step lost-node float-anim">
-                <span className="node-title">Lost Item</span>
-                <span className="node-val">HP Laptop Charger</span>
+            <div className="hero-static-card card">
+              <div className="static-card-header">
+                <span className="badge badge-match"><Sparkles size={14} /> AI Smart Match</span>
+                <span className="badge badge-found">Verified Match</span>
               </div>
-              <div className="connector-line"></div>
-              
-              <div className="ai-match-node glow-anim">
-                <Sparkles size={24} className="glow-icon" />
-                <span className="ai-percent">94%</span>
-                <span className="ai-label">AI Match</span>
-              </div>
-              
-              <div className="connector-line"></div>
-              
-              <div className="flow-step found-node float-anim-delayed">
-                <span className="node-title">Found Item</span>
-                <span className="node-val">HP 65W Adapter</span>
-              </div>
-
-              {/* Float decor cards */}
-              <div className="floating-decor-card badge-card glass">
-                <CheckCircle2 size={16} className="text-success" />
-                <span>Verified Owner</span>
-              </div>
-
-              <div className="floating-decor-card live-match-card glass">
-                <div className="live-match-header">
-                  <span className="live-dot"></span>
-                  <span className="live-label">LIVE MATCH EXAMPLE</span>
+              <div className="static-match-flow">
+                <div className="static-item-box lost-box">
+                  <span className="static-box-tag">LOST ITEM</span>
+                  <strong>HP Laptop Charger</strong>
+                  <small>📍 Central Library</small>
                 </div>
-                <h4 className="match-title">Black HP Charger</h4>
-                <div className="match-bar">
-                  <span className="match-score">94% AI Match</span>
-                  <div className="match-progress-bar"><div className="fill" style={{ width: '94%' }}></div></div>
+                <div className="static-match-badge">
+                  <span className="static-match-percent">94%</span>
+                  <span className="static-match-text">Match</span>
                 </div>
-                <p className="match-desc">Potential match found near Central Library</p>
+                <div className="static-item-box found-box">
+                  <span className="static-box-tag">FOUND ITEM</span>
+                  <strong>HP 65W Adapter</strong>
+                  <small>📍 Library Help Desk</small>
+                </div>
+              </div>
+              <div className="static-card-footer">
+                <div className="feature-check-item">
+                  <CheckCircle2 className="text-success" size={16} />
+                  <span>Instant Security Verification Ready</span>
+                </div>
               </div>
             </div>
           </div>
@@ -328,137 +317,85 @@ const LandingPage = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
+        .hero-static-card {
+          background: var(--bg-card);
+          padding: 24px;
+          border-radius: var(--radius-xl);
+          box-shadow: var(--shadow-xl);
+          border: 1px solid var(--border-color);
+          max-width: 440px;
+          width: 100%;
+        }
+
+        .static-card-header {
+          display: flex;
           justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
+          padding-bottom: 12px;
+          border-bottom: 1px solid var(--border-color);
         }
 
-        .flow-step {
-          background-color: var(--bg-card);
-          border: 1px solid var(--border-color);
+        .static-match-flow {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          align-items: center;
+          margin-bottom: 20px;
+        }
+
+        .static-item-box {
+          width: 100%;
+          padding: 14px 18px;
           border-radius: var(--radius-md);
-          padding: 12px 20px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 200px;
-          box-shadow: var(--shadow-md);
-        }
-
-        .node-title {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          text-transform: uppercase;
-        }
-
-        .node-val {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-
-        .connector-line {
-          width: 2px;
-          height: 40px;
-          background: dashed var(--text-muted);
-          background-size: 2px 8px;
-        }
-
-        .ai-match-node {
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          background: var(--gradient-match);
-          color: var(--text-light);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          box-shadow: var(--shadow-glow);
-          z-index: 5;
-        }
-
-        .ai-percent {
-          font-size: 1.4rem;
-          font-weight: 800;
-          line-height: 1;
-          font-family: var(--font-display);
-        }
-
-        .ai-label {
-          font-size: 0.65rem;
-          font-weight: 700;
-          text-transform: uppercase;
-        }
-
-        .floating-decor-card {
-          position: absolute;
-          border-radius: var(--radius-md);
-          border: 1px solid var(--border-color);
-          box-shadow: var(--shadow-lg);
-          padding: 12px 16px;
-        }
-
-        .badge-card {
-          top: 40px;
-          left: -40px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-weight: 700;
-          font-size: 0.85rem;
-        }
-
-        .live-match-card {
-          bottom: 30px;
-          right: -80px;
-          width: 240px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .live-match-header {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-
-        .live-dot {
-          width: 8px;
-          height: 8px;
-          background-color: var(--danger);
-          border-radius: 50%;
-          animation: pulse-glow 2s infinite;
-        }
-
-        .live-label {
-          font-size: 0.65rem;
-          font-weight: 800;
-          color: var(--text-secondary);
-        }
-
-        .match-title {
-          font-size: 0.95rem;
-          font-weight: 700;
-        }
-
-        .match-bar {
           display: flex;
           flex-direction: column;
           gap: 4px;
         }
 
-        .match-score {
-          font-size: 0.75rem;
-          font-weight: 700;
-          color: var(--primary);
+        .lost-box {
+          background-color: #fef2f2;
+          border: 1px solid #fecaca;
         }
 
-        .match-progress-bar {
-          width: 100%;
-          height: 6px;
-          background-color: var(--bg-muted);
+        .found-box {
+          background-color: #f0fdf4;
+          border: 1px solid #bbf7d0;
+        }
+
+        .static-box-tag {
+          font-size: 0.7rem;
+          font-weight: 800;
+          letter-spacing: 0.05em;
+          color: var(--text-muted);
+        }
+
+        .static-match-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--gradient-match);
+          color: white;
+          padding: 6px 16px;
           border-radius: var(--radius-full);
+          box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .static-match-percent {
+          font-weight: 800;
+          font-size: 1.1rem;
+        }
+
+        .static-match-text {
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+
+        .static-card-footer {
+          padding-top: 12px;
+          border-top: 1px solid var(--border-color);
+        }
           overflow: hidden;
         }
 

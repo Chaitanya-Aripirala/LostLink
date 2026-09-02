@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Toast from '../components/Toast';
-import { Shield, CheckCircle2, XCircle, Clock, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, CheckCircle2, XCircle, Clock, ArrowRight, Sparkles, MessageSquare, Send } from 'lucide-react';
 
 const ClaimPage = () => {
   const { id } = useParams();
@@ -12,6 +12,12 @@ const ClaimPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Chat states
+  const [messages, setMessages] = useState([]);
+  const [newMessageText, setNewMessageText] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -23,6 +29,9 @@ const ClaimPage = () => {
       try {
         const { data } = await API.get(`/claims/${id}`);
         setClaim(data);
+        if (data.messages) {
+          setMessages(data.messages);
+        }
       } catch (err) {
         setToast({ type: 'error', message: 'Claim not found or access denied' });
       } finally {
@@ -31,6 +40,44 @@ const ClaimPage = () => {
     };
     fetchClaim();
   }, [id, user, navigate]);
+
+  // Polling for new chat messages when claim is Verified or Completed
+  useEffect(() => {
+    if (!claim || !['Verified', 'Completed'].includes(claim.status)) return;
+
+    const fetchMessages = async () => {
+      try {
+        const { data } = await API.get(`/claims/${id}/messages`);
+        setMessages(data);
+      } catch (err) {
+        // silent fail on background poll
+      }
+    };
+
+    const interval = setInterval(fetchMessages, 3000);
+    return () => clearInterval(interval);
+  }, [id, claim]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSendMessage = async (e, quickText = null) => {
+    if (e) e.preventDefault();
+    const textToSend = quickText || newMessageText;
+    if (!textToSend.trim()) return;
+
+    setSendingMessage(true);
+    try {
+      const { data } = await API.post(`/claims/${id}/messages`, { text: textToSend });
+      setMessages(data);
+      if (!quickText) setNewMessageText('');
+    } catch (err) {
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to send message' });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -175,12 +222,78 @@ const ClaimPage = () => {
             <div className="card result-card success-result">
               <CheckCircle2 size={40} className="text-success" />
               <h3>Ownership Verified!</h3>
-              <p>The verification answer was accepted. Please arrange a safe handover on campus.</p>
+              <p>The verification answer was accepted. You can now chat directly below to arrange the item handover!</p>
               {isOwner && (
                 <button className="btn btn-primary" onClick={() => handleStatusUpdate('Completed')}>
                   Mark as Returned ✓
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Interactive Chat Box between Finder & Claimant */}
+          {['Verified', 'Completed'].includes(claim.status) && (
+            <div className="card chat-box-card">
+              <div className="chat-header">
+                <div className="chat-header-info">
+                  <div className="chat-icon-wrapper">
+                    <MessageSquare size={20} />
+                  </div>
+                  <div>
+                    <h4>Direct Handover Chat</h4>
+                    <span className="chat-subtitle">
+                      Connecting {isClaimant ? claim.ownerId?.name : claim.claimantId?.name}
+                    </span>
+                  </div>
+                </div>
+                <span className="online-badge"><span className="online-dot"></span> Active Room</span>
+              </div>
+
+              <div className="chat-messages-container">
+                {messages.length === 0 ? (
+                  <div className="chat-empty-state">
+                    <MessageSquare size={36} style={{ color: 'var(--primary)', opacity: 0.6 }} />
+                    <p className="empty-title">Start the Conversation!</p>
+                    <p className="empty-sub">Verification passed. Send a message to coordinate the time & place for returning the item.</p>
+                    <div className="quick-chips">
+                      <button type="button" className="chip-btn" onClick={() => handleSendMessage(null, "👋 Hi! Where can we meet on campus to exchange the item?")}>
+                        👋 "Where can we meet?"
+                      </button>
+                      <button type="button" className="chip-btn" onClick={() => handleSendMessage(null, "📍 I am near the Central Library / Student Center right now.")}>
+                        📍 "I'm near Central Library"
+                      </button>
+                      <button type="button" className="chip-btn" onClick={() => handleSendMessage(null, "⏰ What time works best for you today?")}>
+                        ⏰ "What time works best?"
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => {
+                    const isMe = (msg.senderId?._id || msg.senderId) === user._id;
+                    return (
+                      <div key={idx} className={`chat-message-bubble ${isMe ? 'sent' : 'received'}`}>
+                        <div className="msg-sender">{isMe ? 'You' : msg.senderName}</div>
+                        <div className="msg-content">{msg.text}</div>
+                        <div className="msg-time">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              <form onSubmit={(e) => handleSendMessage(e)} className="chat-input-form">
+                <input
+                  type="text"
+                  className="form-control chat-input"
+                  placeholder="Type a message to arrange handover..."
+                  value={newMessageText}
+                  onChange={(e) => setNewMessageText(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary chat-send-btn" disabled={sendingMessage || !newMessageText.trim()}>
+                  <Send size={16} /> Send
+                </button>
+              </form>
             </div>
           )}
 
@@ -334,6 +447,190 @@ const ClaimPage = () => {
         .timeline-step.done::before { background: var(--success); }
         .timeline-step div strong { font-size: 0.85rem; display: block; }
         .timeline-step div p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .chat-box-card {
+          padding: 0;
+          display: flex;
+          flex-direction: column;
+          border-radius: var(--radius-lg);
+          border: 1px solid var(--border-color);
+          overflow: hidden;
+          background: #ffffff;
+        }
+
+        .chat-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px 20px;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-header-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .chat-icon-wrapper {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: var(--gradient-primary);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .chat-header h4 {
+          font-size: 1.05rem;
+          margin: 0;
+        }
+
+        .chat-subtitle {
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+        }
+
+        .online-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--success);
+          background: var(--success-light);
+          padding: 4px 10px;
+          border-radius: var(--radius-full);
+        }
+
+        .online-dot {
+          width: 8px;
+          height: 8px;
+          background-color: var(--success);
+          border-radius: 50%;
+        }
+
+        .chat-messages-container {
+          min-height: 240px;
+          max-height: 380px;
+          overflow-y: auto;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          background: #f8fafc;
+        }
+
+        .chat-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 24px 12px;
+          margin: auto;
+        }
+
+        .empty-title {
+          font-weight: 700;
+          font-size: 1rem;
+          margin-top: 8px;
+        }
+
+        .empty-sub {
+          font-size: 0.825rem;
+          color: var(--text-secondary);
+          max-width: 340px;
+          margin-top: 4px;
+          margin-bottom: 16px;
+        }
+
+        .quick-chips {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 100%;
+          max-width: 320px;
+        }
+
+        .chip-btn {
+          background: #ffffff;
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 8px 12px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--primary);
+          cursor: pointer;
+          transition: var(--transition-fast);
+          text-align: left;
+        }
+
+        .chip-btn:hover {
+          background: var(--primary-light);
+          border-color: var(--primary);
+        }
+
+        .chat-message-bubble {
+          max-width: 75%;
+          padding: 10px 14px;
+          border-radius: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          word-break: break-word;
+        }
+
+        .chat-message-bubble.sent {
+          align-self: flex-end;
+          background: var(--gradient-primary);
+          color: #ffffff;
+          border-bottom-right-radius: 4px;
+        }
+
+        .chat-message-bubble.received {
+          align-self: flex-start;
+          background: #ffffff;
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-bottom-left-radius: 4px;
+        }
+
+        .msg-sender {
+          font-size: 0.7rem;
+          font-weight: 700;
+          opacity: 0.85;
+        }
+
+        .msg-content {
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+
+        .msg-time {
+          font-size: 0.65rem;
+          opacity: 0.75;
+          align-self: flex-end;
+          margin-top: 2px;
+        }
+
+        .chat-input-form {
+          display: flex;
+          gap: 10px;
+          padding: 12px 16px;
+          background: #ffffff;
+          border-top: 1px solid var(--border-color);
+        }
+
+        .chat-input {
+          flex: 1;
+        }
+
+        .chat-send-btn {
+          white-space: nowrap;
+        }
 
         @media (max-width: 900px) {
           .claim-layout { grid-template-columns: 1fr; }

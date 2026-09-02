@@ -61,9 +61,6 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="container footer-bottom-content">
           <p>&copy; {new Date().getFullYear()} LostLink. Built for Campus Hackathon.</p>
-          <p className="made-with">
-            Made with <Heart size={14} className="heart-icon" /> for Chaitanya
-          </p>
         </div>
       </div>
 
