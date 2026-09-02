@@ -129,11 +129,10 @@ const ClaimPage = () => {
     );
   }
 
-  const isClaimant = user._id === (claim.claimantId?._id || claim.claimantId);
-  const isOwner = user._id === (claim.ownerId?._id || claim.ownerId);
-  const verificationQ = isClaimant
-    ? claim.foundItemId?.verificationQuestion
-    : claim.lostItemId?.verificationQuestion;
+  const isClaimant = user._id.toString() === (claim.claimantId?._id || claim.claimantId).toString();
+  const isOwner = user._id.toString() === (claim.ownerId?._id || claim.ownerId).toString();
+  // Use the verificationQuestion stored on the claim at creation time — it's always the correct one
+  const verificationQ = claim.verificationQuestion;
 
   const statusConfig = {
     'Pending': { label: 'Pending', color: 'var(--text-muted)', icon: Clock },
@@ -269,7 +268,7 @@ const ClaimPage = () => {
                   </div>
                 ) : (
                   messages.map((msg, idx) => {
-                    const isMe = (msg.senderId?._id || msg.senderId) === user._id;
+                    const isMe = (msg.senderId?._id || msg.senderId).toString() === user._id.toString();
                     return (
                       <div key={idx} className={`chat-message-bubble ${isMe ? 'sent' : 'received'}`}>
                         <div className="msg-sender">{isMe ? 'You' : msg.senderName}</div>

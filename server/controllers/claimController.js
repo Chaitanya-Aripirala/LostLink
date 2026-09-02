@@ -178,11 +178,16 @@ export const verifyClaimAnswer = async (req, res) => {
     }
 
     // Find correct answer
+    // Note: after populate, claimantId is a User object — use ._id
     let correctAnswer = '';
-    // If claimant is lostItem owner, the finder (foundItem owner) set the question.
-    if (claim.claimantId.toString() === claim.lostItemId.userId.toString()) {
+    const claimantIdStr = (claim.claimantId?._id || claim.claimantId).toString();
+    const lostItemOwnerStr = claim.lostItemId.userId.toString();
+
+    if (claimantIdStr === lostItemOwnerStr) {
+      // The person who lost the item is the claimant. They answer the founder's question.
       correctAnswer = claim.foundItemId.verificationAnswer;
     } else {
+      // The finder is the claimant. They answer the lost item owner's question.
       correctAnswer = claim.lostItemId.verificationAnswer;
     }
 
@@ -301,9 +306,11 @@ export const getClaimMessages = async (req, res) => {
       return res.status(404).json({ message: 'Claim not found' });
     }
 
+    const claimantStr = (claim.claimantId?._id || claim.claimantId).toString();
+    const ownerStr = (claim.ownerId?._id || claim.ownerId).toString();
     if (
-      claim.claimantId.toString() !== req.user._id.toString() &&
-      claim.ownerId.toString() !== req.user._id.toString() &&
+      claimantStr !== req.user._id.toString() &&
+      ownerStr !== req.user._id.toString() &&
       req.user.role !== 'admin'
     ) {
       return res.status(403).json({ message: 'Unauthorized' });
@@ -330,9 +337,11 @@ export const sendClaimMessage = async (req, res) => {
       return res.status(404).json({ message: 'Claim not found' });
     }
 
+    const claimantStr2 = (claim.claimantId?._id || claim.claimantId).toString();
+    const ownerStr2 = (claim.ownerId?._id || claim.ownerId).toString();
     if (
-      claim.claimantId.toString() !== req.user._id.toString() &&
-      claim.ownerId.toString() !== req.user._id.toString() &&
+      claimantStr2 !== req.user._id.toString() &&
+      ownerStr2 !== req.user._id.toString() &&
       req.user.role !== 'admin'
     ) {
       return res.status(403).json({ message: 'Unauthorized' });
@@ -349,7 +358,7 @@ export const sendClaimMessage = async (req, res) => {
     await claim.save();
 
     // Determine recipient
-    const recipientId = claim.claimantId.toString() === req.user._id.toString()
+    const recipientId = (claim.claimantId?._id || claim.claimantId).toString() === req.user._id.toString()
       ? claim.ownerId
       : claim.claimantId;
 
