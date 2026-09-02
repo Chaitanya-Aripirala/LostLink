@@ -189,7 +189,7 @@ const DashboardPage = () => {
                         </div>
                         <span className={`status-pill pill-${claim.status}`}>{claim.status}</span>
                         <Link to={`/claims/${claim._id}`} className="btn btn-light btn-sm">
-                          {claim.status === 'initiated' ? 'Verify' : 'Review'}
+                          {(claim.status === 'Verification Required' || claim.status === 'Pending') ? 'Verify' : 'Review'}
                         </Link>
                       </div>
                     ))}
@@ -436,17 +436,17 @@ const DashboardPage = () => {
           text-transform: uppercase;
         }
 
-        .pill-active, .pill-initiated {
+        .pill-active, .pill-Pending, .pill-Verification\ Required {
           background-color: var(--primary-light);
           color: var(--primary);
         }
 
-        .pill-resolved, .pill-approved {
+        .pill-Completed, .pill-Verified {
           background-color: var(--success-light);
           color: var(--success);
         }
 
-        .pill-rejected {
+        .pill-Rejected {
           background-color: var(--danger-light);
           color: var(--danger);
         }
@@ -500,9 +500,9 @@ const DashboardPage = () => {
           line-height: 1.4;
         }
 
-        .status-text-approved { color: var(--success); font-weight: 700; }
-        .status-text-rejected { color: var(--danger); font-weight: 700; }
-        .status-text-initiated { color: var(--primary); font-weight: 700; }
+        [class*="status-text-Completed"], [class*="status-text-Verified"] { color: var(--success); font-weight: 700; }
+        [class*="status-text-Rejected"] { color: var(--danger); font-weight: 700; }
+        [class*="status-text-Pending"], [class*="status-text-Verification"] { color: var(--primary); font-weight: 700; }
 
         .empty-activity {
           text-align: center;

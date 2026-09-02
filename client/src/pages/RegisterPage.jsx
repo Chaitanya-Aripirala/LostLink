@@ -107,7 +107,6 @@ const RegisterPage = () => {
                   type="text" 
                   id="name" 
                   className="form-control" 
-                  placeholder="Chaitanya A" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -122,7 +121,6 @@ const RegisterPage = () => {
                   type="email" 
                   id="email" 
                   className="form-control" 
-                  placeholder="email@college.edu" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -140,7 +138,6 @@ const RegisterPage = () => {
                   type="text" 
                   id="studentId" 
                   className="form-control" 
-                  placeholder="2026CS101" 
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
                   required
@@ -155,7 +152,6 @@ const RegisterPage = () => {
                   type="text" 
                   id="phone" 
                   className="form-control" 
-                  placeholder="9876543210" 
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
@@ -172,7 +168,6 @@ const RegisterPage = () => {
                 type="text" 
                 id="college" 
                 className="form-control" 
-                placeholder="Campus School of Engineering" 
                 value={college}
                 onChange={(e) => setCollege(e.target.value)}
                 required
@@ -188,7 +183,6 @@ const RegisterPage = () => {
                 type="password" 
                 id="password" 
                 className="form-control" 
-                placeholder="••••••••" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -219,6 +213,92 @@ const RegisterPage = () => {
       )}
 
       <style>{`
+        .auth-page {
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: var(--bg-app);
+          background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.04) 0, transparent 50%),
+                            radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.04) 0, transparent 50%);
+          padding: 80px 24px;
+        }
+
+        .auth-card {
+          width: 100%;
+          max-width: 440px;
+          padding: 40px;
+          border-radius: var(--radius-xl);
+          border: 1px solid var(--border-color);
+          background-color: var(--bg-card);
+          box-shadow: var(--shadow-xl);
+        }
+
+        .auth-header {
+          text-align: center;
+          margin-bottom: 24px;
+        }
+
+        .auth-logo {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-family: var(--font-display);
+          font-weight: 800;
+          font-size: 1.25rem;
+          color: var(--text-primary);
+          margin-bottom: 16px;
+        }
+
+        .auth-header h2 {
+          font-size: 1.6rem;
+          font-weight: 800;
+          margin-bottom: 6px;
+        }
+
+        .auth-header p {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+
+        .input-with-icon {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        .input-icon {
+          position: absolute;
+          left: 16px;
+          color: var(--text-muted);
+          pointer-events: none;
+        }
+
+        .input-with-icon .form-control {
+          padding-left: 48px;
+        }
+
+        .auth-submit {
+          width: 100%;
+          margin-top: 10px;
+        }
+
+        .auth-footer {
+          text-align: center;
+          margin-top: 24px;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+
+        .auth-footer a {
+          color: var(--primary);
+          font-weight: 700;
+        }
+
+        .auth-footer a:hover {
+          text-decoration: underline;
+        }
+
         .avatar-upload-section {
           display: flex;
           justify-content: center;

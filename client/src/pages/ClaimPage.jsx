@@ -41,11 +41,12 @@ const ClaimPage = () => {
     setSubmitting(true);
     try {
       const { data } = await API.post(`/claims/${id}/verify`, { answer });
-      setClaim(data);
-      if (data.status === 'approved') {
+      const updatedClaim = data.claim || data;
+      setClaim(updatedClaim);
+      if (data.success || updatedClaim.status === 'Verified') {
         setToast({ type: 'success', message: '✅ Verification successful! Ownership confirmed.' });
       } else {
-        setToast({ type: 'error', message: '❌ Incorrect answer. Please try again.' });
+        setToast({ type: 'error', message: data.message || '❌ Incorrect answer. Please try again.' });
       }
     } catch (err) {
       setToast({ type: 'error', message: err.response?.data?.message || 'Verification failed' });
@@ -88,11 +89,11 @@ const ClaimPage = () => {
     : claim.lostItemId?.verificationQuestion;
 
   const statusConfig = {
-    initiated: { label: 'Pending Verification', color: 'var(--primary)', icon: Clock },
-    verified: { label: 'Answer Submitted', color: 'var(--warning)', icon: Shield },
-    approved: { label: 'Ownership Confirmed', color: 'var(--success)', icon: CheckCircle2 },
-    rejected: { label: 'Claim Rejected', color: 'var(--danger)', icon: XCircle },
-    resolved: { label: 'Item Returned', color: 'var(--success)', icon: CheckCircle2 },
+    'Pending': { label: 'Pending', color: 'var(--text-muted)', icon: Clock },
+    'Verification Required': { label: 'Pending Verification', color: 'var(--primary)', icon: Clock },
+    'Verified': { label: 'Ownership Verified', color: 'var(--success)', icon: CheckCircle2 },
+    'Rejected': { label: 'Claim Rejected', color: 'var(--danger)', icon: XCircle },
+    'Completed': { label: 'Item Returned', color: 'var(--success)', icon: CheckCircle2 },
   };
 
   const StatusIcon = statusConfig[claim.status]?.icon || Clock;
@@ -138,7 +139,7 @@ const ClaimPage = () => {
           </div>
 
           {/* Verification Section */}
-          {claim.status === 'initiated' && isClaimant && (
+          {(claim.status === 'Verification Required' || claim.status === 'Pending') && isClaimant && (
             <div className="card verification-card">
               <div className="verification-header">
                 <Shield size={22} className="text-primary" />
@@ -170,20 +171,20 @@ const ClaimPage = () => {
           )}
 
           {/* Result Card */}
-          {claim.status === 'approved' && (
+          {claim.status === 'Verified' && (
             <div className="card result-card success-result">
               <CheckCircle2 size={40} className="text-success" />
               <h3>Ownership Verified!</h3>
               <p>The verification answer was accepted. Please arrange a safe handover on campus.</p>
               {isOwner && (
-                <button className="btn btn-primary" onClick={() => handleStatusUpdate('resolved')}>
+                <button className="btn btn-primary" onClick={() => handleStatusUpdate('Completed')}>
                   Mark as Returned ✓
                 </button>
               )}
             </div>
           )}
 
-          {claim.status === 'rejected' && (
+          {claim.status === 'Rejected' && (
             <div className="card result-card danger-result">
               <XCircle size={40} className="text-danger" />
               <h3>Claim Rejected</h3>
@@ -192,7 +193,7 @@ const ClaimPage = () => {
             </div>
           )}
 
-          {claim.status === 'resolved' && (
+          {claim.status === 'Completed' && (
             <div className="card result-card success-result">
               <CheckCircle2 size={40} className="text-success" />
               <h3>Item Successfully Returned!</h3>
@@ -201,15 +202,15 @@ const ClaimPage = () => {
           )}
 
           {/* Owner Controls */}
-          {isOwner && (claim.status === 'verified' || claim.status === 'initiated') && (
+          {isOwner && (claim.status === 'Verified' || claim.status === 'Verification Required') && (
             <div className="card owner-controls-card">
               <h4>Owner Controls</h4>
               <p>Review the claimant's submission and decide:</p>
               <div className="owner-btns">
-                <button className="btn btn-primary" onClick={() => handleStatusUpdate('approved')}>
+                <button className="btn btn-primary" onClick={() => handleStatusUpdate('Completed')}>
                   <CheckCircle2 size={16} /> Approve Claim
                 </button>
-                <button className="btn btn-outline" style={{ color: 'var(--danger)' }} onClick={() => handleStatusUpdate('rejected')}>
+                <button className="btn btn-outline" style={{ color: 'var(--danger)' }} onClick={() => handleStatusUpdate('Rejected')}>
                   <XCircle size={16} /> Reject Claim
                 </button>
               </div>
@@ -256,15 +257,15 @@ const ClaimPage = () => {
                 <div className="t-dot"></div>
                 <div><strong>Claim Submitted</strong><p>Claim initiated and recorded</p></div>
               </div>
-              <div className={`timeline-step ${['verified','approved','resolved'].includes(claim.status) ? 'done' : ''}`}>
+              <div className={`timeline-step ${['Verified','Completed'].includes(claim.status) ? 'done' : ''}`}>
                 <div className="t-dot"></div>
                 <div><strong>Answer Submitted</strong><p>Claimant answered verification question</p></div>
               </div>
-              <div className={`timeline-step ${['approved','resolved'].includes(claim.status) ? 'done' : ''}`}>
+              <div className={`timeline-step ${['Completed'].includes(claim.status) ? 'done' : ''}`}>
                 <div className="t-dot"></div>
                 <div><strong>Owner Decision</strong><p>Claim approved or rejected</p></div>
               </div>
-              <div className={`timeline-step ${claim.status === 'resolved' ? 'done' : ''}`}>
+              <div className={`timeline-step ${claim.status === 'Completed' ? 'done' : ''}`}>
                 <div className="t-dot"></div>
                 <div><strong>Item Returned</strong><p>Successful handover completed</p></div>
               </div>
